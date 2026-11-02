@@ -14,7 +14,7 @@
   .pass{color:#2ee06a;font-weight:bold}
   .rung{font-size:12px;margin:4px 0}
   .rung b{color:#ffd700}
-  canvas{display:block;width:224px;height:130px;background:#11131f;border:1px solid #333;border-radius:6px}
+  canvas{display:block;width:224px;height:118px;background:#11131f;border:1px solid #333;border-radius:6px}
   .hint{font-size:10px;color:#bbb;margin:4px 0 0;line-height:1.3}
   button{width:100%;margin-top:5px;padding:6px;background:#fe5000;color:#fff;border:0;border-radius:6px;font-size:12px}
 </style>
@@ -27,7 +27,7 @@
   phi + 1 = <span id="phiplus1"></span><br>
   check: <span id="check" class="pass"></span></p>
   <p class="rung">Rung n = <b id="n">0</b> &nbsp; phi^n = <b id="phin">1</b></p>
-  <canvas id="plot" width="224" height="130"></canvas>
+  <canvas id="plot" width="224" height="118"></canvas>
   <p class="hint">Scroll wheel: step rung. Side button / Reset: reset to n=0.</p>
   <button id="reset" type="button">Reset (side button)</button>
 </div>
@@ -75,8 +75,8 @@
   function draw(){
     var c = document.getElementById('plot');
     var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, 224, 130);
-    var cx = 112, cy = 65;
+    ctx.clearRect(0, 0, 224, 118);
+    var cx = 112, cy = 59;
     ctx.fillStyle = '#4aa8ff';
     for (var i = 0; i <= 180; i++) {
       var p = goldenLoc(i);
