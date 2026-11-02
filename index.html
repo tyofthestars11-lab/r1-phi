@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=240, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>UniversalPhiEngine</title>
+<title>UniversalPhiEngine ONE</title>
 <style>
   html,body{width:240px;height:282px;margin:0;padding:0;overflow:hidden;box-sizing:border-box;background:#0b0b12;color:#fff;font-family:Arial,Helvetica,sans-serif}
   *{box-sizing:border-box}
@@ -12,11 +12,13 @@
   .phi{font-size:10px;line-height:1.25;margin:0 0 2px;flex-shrink:0}
   .phi b{color:#ffd700}
   .pass{color:#2ee06a;font-weight:bold}
-  .rung{font-size:11px;margin:2px 0;flex-shrink:0}
-  .rung b{color:#ffd700}
-  canvas{display:block;width:224px;flex:1;min-height:0;background:#11131f;border:1px solid #333;border-radius:6px}
-  .hint{font-size:9px;color:#bbb;margin:2px 0 0;line-height:1.2;flex-shrink:0}
+  .status{font-size:10px;margin:2px 0;flex-shrink:0}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e53935;vertical-align:middle}
+  .dot.ok{background:#2ee06a}
+  input{width:100%;padding:4px;font-size:11px;background:#11131f;color:#fff;border:1px solid #333;border-radius:6px;flex-shrink:0}
   button{width:100%;margin-top:3px;padding:5px;background:#fe5000;color:#fff;border:0;border-radius:6px;font-size:12px;flex-shrink:0}
+  canvas{display:block;width:224px;height:50px;background:#11131f;border:1px solid #333;border-radius:6px;flex-shrink:0;margin-top:3px}
+  #resp{flex:1;min-height:0;overflow:auto;font-size:10px;line-height:1.3;background:#11131f;border:1px solid #333;border-radius:6px;padding:4px;margin-top:3px;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -26,13 +28,16 @@
   phi&sup2; = <span id="phi2"></span><br>
   phi + 1 = <span id="phiplus1"></span><br>
   check: <span id="check" class="pass"></span></p>
-  <p class="rung">Rung n = <b id="n">0</b> &nbsp; phi^n = <b id="phin">1</b></p>
-  <canvas id="plot" width="224" height="100"></canvas>
-  <p class="hint">Scroll: step rung. Reset: n=0.</p>
-  <button id="reset" type="button">Reset (side button)</button>
+  <p class="status"><span id="dot" class="dot"></span> <span id="onestat">ONE: not tested</span></p>
+  <input id="prompt" type="text" value="Hello ONE, say phi squared equals phi plus one">
+  <button id="talk" type="button">Talk to ONE</button>
+  <canvas id="plot" width="224" height="50"></canvas>
+  <div id="resp">ONE reply will show here.</div>
 </div>
 <script>
 (function(){
+  var ONE = "https://symptoms-revised-les-private.trycloudflare.com";
+  var MODEL = "one:latest";
   var PHI = 1.618033988749895;
   var phi2 = PHI * PHI;
   var phiplus1 = PHI + 1;
@@ -40,69 +45,50 @@
   document.getElementById('phi2').textContent = phi2.toFixed(15);
   document.getElementById('phiplus1').textContent = phiplus1.toFixed(15);
   document.getElementById('check').textContent = (diff < 0.000000000001) ? 'PASS phi^2 == phi + 1' : 'FAIL diff=' + diff;
-  var n = 0;
-  var SPACING = 4;
-  var GOLDEN_ANGLE = 137.5077640500378;
-  function goldenLoc(i){
-    var a = GOLDEN_ANGLE * i * Math.PI / 180;
-    var r = SPACING * Math.sqrt(i);
-    return {x: r * Math.cos(a), y: r * Math.sin(a)};
-  }
-  function save(){
-    try {
-      var v = JSON.stringify({n: n});
-      if (window.creationStorage && window.creationStorage.plain && window.creationStorage.plain.setItem) {
-        window.creationStorage.plain.setItem('phi-rung', v);
-      } else if (window.localStorage) {
-        window.localStorage.setItem('phi-rung', v);
-      }
-    } catch (e) {}
-  }
-  function load(){
-    try {
-      var v = null;
-      if (window.creationStorage && window.creationStorage.plain && window.creationStorage.plain.getItem) {
-        v = window.creationStorage.plain.getItem('phi-rung');
-      } else if (window.localStorage) {
-        v = window.localStorage.getItem('phi-rung');
-      }
-      if (v) {
-        var o = JSON.parse(v);
-        if (typeof o.n === 'number' && isFinite(o.n)) { n = Math.max(0, Math.min(21, Math.round(o.n))); }
-      }
-    } catch (e) {}
-  }
-  function draw(){
-    var c = document.getElementById('plot');
-    var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, 224, 100);
-    var cx = 112, cy = 50;
-    ctx.fillStyle = '#4aa8ff';
-    for (var i = 0; i <= 180; i++) {
-      var p = goldenLoc(i);
-      ctx.beginPath();
-      ctx.arc(cx + p.x, cy + p.y, 1.4, 0, 6.283185307179586);
-      ctx.fill();
-    }
-    var cur = goldenLoc(n);
-    ctx.fillStyle = '#ffd700';
+  var c = document.getElementById('plot');
+  var ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 224, 50);
+  ctx.fillStyle = '#4aa8ff';
+  for (var i = 0; i <= 180; i++) {
+    var a = 137.5077640500378 * i * Math.PI / 180;
+    var r = 4 * Math.sqrt(i);
     ctx.beginPath();
-    ctx.arc(cx + cur.x, cy + cur.y, 4, 0, 6.283185307179586);
+    ctx.arc(112 + r * Math.cos(a), 25 + r * Math.sin(a), 1.2, 0, 6.283185307179586);
     ctx.fill();
-    document.getElementById('n').textContent = String(n);
-    document.getElementById('phin').textContent = Math.pow(PHI, n).toFixed(6);
   }
-  function step(d){ n = Math.max(0, Math.min(21, n + d)); save(); draw(); }
-  function reset(){ n = 0; save(); draw(); }
-  window.addEventListener('wheel', function(e){ e.preventDefault(); step(e.deltaY < 0 ? 1 : -1); }, {passive: false});
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.arc(112, 25, 4, 0, 6.283185307179586);
+  ctx.fill();
+  function setDot(ok, txt){
+    var d = document.getElementById('dot');
+    d.className = ok ? 'dot ok' : 'dot';
+    document.getElementById('onestat').textContent = txt;
+  }
+  function talk(){
+    var text = document.getElementById('prompt').value || 'Hello ONE';
+    setDot(false, 'ONE: thinking...');
+    document.getElementById('resp').textContent = 'Asking ONE...';
+    fetch(ONE + "/api/generate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({model: MODEL, prompt: text, stream: false})})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.response) {
+          setDot(true, 'ONE: connected');
+          document.getElementById('resp').textContent = d.response;
+        } else {
+          setDot(false, 'ONE: no answer');
+          document.getElementById('resp').textContent = 'No response from ONE.';
+        }
+      })
+      .catch(function(e){
+        setDot(false, 'ONE: no answer');
+        document.getElementById('resp').textContent = 'ONE did not answer: ' + e;
+      });
+  }
+  document.getElementById('talk').addEventListener('click', talk);
   window.addEventListener('keydown', function(e){
-    if (e.key === 'ArrowUp') { step(1); }
-    else if (e.key === 'ArrowDown') { step(-1); }
-    else if (e.key === ' ' || e.key === 'Enter') { reset(); }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); talk(); }
   });
-  document.getElementById('reset').addEventListener('click', reset);
-  load();
-  draw();
 })();
 </script>
 </body>
